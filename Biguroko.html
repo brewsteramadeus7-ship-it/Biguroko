@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pantheon Legends: The Convergence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --card-bg: #2b2b4d;
+            --text-color: #e0e0e0;
+            --accent-color: #e94560;
+            --primary-button-bg: #e94560;
+            --primary-button-hover: #ff5e78;
+            --secondary-button-bg: #4d4d6b;
+            --secondary-button-hover: #5d5d8b;
+            --hp-bar-bg: #34495e;
+            --hp-bar-fill: #27ae60;
+            --mana-bar-fill: #3498db;
+            --border-color: #5d5d8b;
+            --rarity-Commun: #888;
+            --rarity-Rare: #87ceeb;
+            --rarity-Epique: #9932cc;
+            --rarity-Légendaire: #ff8c00;
+            --rarity-Mythique: #ffd700;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: var(--bg-color);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        h1, h2, h3 {
+            text-align: center;
+            color: var(--accent-color);
+            margin-top: 0;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-color);
+            background-color: var(--primary-button-bg);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(233, 69, 96, 0.4);
+        }
+
+        .btn:hover {
+            background-color: var(--primary-button-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(233, 69, 96, 0.6);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-button-bg);
+            box-shadow: 0 5px 15px rgba(77, 77, 107, 0.4);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--secondary-button-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(77, 77, 107, 0.6);
+        }
+
+        .character-list, .combat-log, .character-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+        }
+        
+        .combat-log, .character-details {
+            grid-template-columns: 1fr;
+        }
+
+        .character-card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        
+        .character-card.selected {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px var(--accent-color);
+            transform: scale(1.05);
+        }
+
+        .character-card h4 {
+            margin: 5px 0;
+            font-size: 1.1rem;
+        }
+
+        .character-card p {
+            margin: 2px 0;
+            font-size: 0.9rem;
+        }
+
+        .character-card .rarity {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .rarity-Commun { color: var(--rarity-Commun); }
+        .rarity-Rare { color: var(--rarity-Rare); }
+        .rarity-Epique { color: var(--rarity-Epique); }
+        .rarity-Légendaire { color: var(--rarity-Légendaire); }
+        .rarity-Mythique { color: var(--rarity-Mythique); }
+
+        .combat-arena {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .team-display {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .combatant {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            width: 150px;
+            position: relative;
+        }
+
+        .combatant .hp-bar-container {
+            width: 100%;
+            height: 15px;
+            background-color: var(--hp-bar-bg);
+            border-radius: 5px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .combatant .hp-bar-fill {
+            height: 100%;
+            background-color: var(--hp-bar-fill);
+            transition: width 0.3s ease;
+        }
+        
+        .combatant .mana-bar-container {
+            width: 100%;
+            height: 5px;
+            background-color: #34495e;
+            border-radius: 5px;
+            margin-top: 2px;
+            overflow: hidden;
+        }
+
+        .combatant .mana-bar-fill {
+            height: 100%;
+            background-color: var(--mana-bar-fill);
+            transition: width 0.3s ease;
+        }
+
+        .skill-list {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .skill-btn {
+            padding: 10px 15px;
+            background-color: var(--secondary-button-bg);
+            border: none;
+            border-radius: 8px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .skill-btn:hover {
+            background-color: var(--secondary-button-hover);
+        }
+
+        .combat-log {
+            background-color: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+            max-height: 200px;
+            overflow-y: scroll;
+            margin-top: 20px;
+        }
+        
+        .combat-log p {
+            margin: 5px 0;
+        }
+        
+        #victory-message, #defeat-message {
+            display: none;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        #victory-message {
+            background-color: #27ae60;
+        }
+        
+        #defeat-message {
+            background-color: #e74c3c;
+        }
+
+        #team-selection-roster {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+        
+        .team-selection-card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative;
+        }
+        
+        .team-selection-card.selected {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+
+        .selected-team {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .selected-slot {
+            width: 80px;
+            height: 100px;
+            background-color: var(--secondary-button-bg);
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: var(--text-color);
+            text-align: center;
+        }
+        
+        .selected-slot.filled {
+            border-style: solid;
+        }
+
+        .character-details-view {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .stat-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            background-color: var(--secondary-button-bg);
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .skill-details {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .skill-item {
+            background-color: #3b3b5e;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .skill-item h4 {
+            margin: 0 0 5px 0;
+            color: var(--accent-color);
+        }
+        
+        .character-details-top {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .char-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .gacha-result {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: var(--card-bg);
+            margin-top: 20px;
+        }
+        
+        .gacha-result .char-icon {
+            animation: bounceIn 0.5s ease-out;
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+        
+        .editor-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .editor-form label {
+            font-weight: bold;
+        }
+        
+        .editor-form input, .editor-form select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--secondary-button-bg);
+            color: var(--text-color);
+            box-sizing: border-box;
+        }
+        
+        .editor-form input:focus, .editor-form select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 5px var(--accent-color);
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            .character-list, .team-display, .skill-list {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="home-screen" class="screen active">
+        <h1>Pantheon Legends: The Convergence</h1>
+        <div class="button-group">
+            <button class="btn" onclick="showScreen('team-selection-screen')">Démarrer une Campagne</button>
+            <button class="btn btn-secondary" onclick="showScreen('gacha-screen')">Portail de l'invocation</button>
+            <button class="btn btn-secondary" onclick="showScreen('roster-screen')">Roster des Personnages</button>
+            <button class="btn btn-secondary" onclick="showScreen('editor-screen')">Éditeur de Personnages</button>
+            <button class="btn btn-secondary" onclick="showScreen('inventory-screen')">Inventaire & Équipement</button>
+        </div>
+    </div>
+
+    <div id="roster-screen" class="screen">
+        <h2>Roster des Personnages</h2>
+        <div id="roster-list" class="character-list"></div>
+        <button class="btn btn-secondary" onclick="showScreen('home-screen')">Retour à l'accueil</button>
+    </div>
+    
+    <div id="team-selection-screen" class="screen">
+        <h2>Sélection de l'équipe (5/5)</h2>
+        <div id="selected-team-display" class="selected-team">
+            <div class="selected-slot" data-index="0">Slot 1</div>
+            <div class="selected-slot" data-index="1">Slot 2</div>
+            <div class="selected-slot" data-index="2">Slot 3</div>
+            <div class="selected-slot" data-index="3">Slot 4</div>
+            <div class="selected-slot" data-index="4">Slot 5</div>
+        </div>
+        <button class="btn" id="start-combat-btn" disabled>Démarrer le Combat</button>
+        <div id="team-selection-roster"></div>
+        <button class="btn btn-secondary" onclick="showScreen('home-screen')">Retour à l'accueil</button>
+    </div>
+
+    <div id="combat-screen" class="screen">
+        <h2>Combat</h2>
+        <div class="combat-arena">
+            <div id="enemy-team" class="team-display"></div>
+            <div id="player-team" class="team-display"></div>
+        </div>
+        <div id="combat-actions" class="skill-list"></div>
+        <div id="combat-log" class="combat-log"></div>
+        <h3 id="victory-message">Victoire ! 🎉</h3>
+        <h3 id="defeat-message">Défaite... 💀</h3>
+        <button id="end-combat-btn" class="btn btn-secondary" style="display: none;" onclick="showScreen('home-screen')">Retour à l'accueil</button>
+    </div>
+    
+    <div id="character-detail-screen" class="screen">
+        <div id="character-details-view" class="character-details-view"></div>
+        <button class="btn btn-secondary" onclick="showScreen('roster-screen')">Retour au Roster</button>
+    </div>
+    
+    <div id="inventory-screen" class="screen">
+        <h2>Inventaire</h2>
+        <div id="inventory-list" class="character-list"></div>
+        <button class="btn btn-secondary" onclick="showScreen('home-screen')">Retour à l'accueil</button>
+    </div>
+
+    <div id="gacha-screen" class="screen">
+        <h2>Portail de l'invocation</h2>
+        <p>Invoque de nouveaux héros pour ton Panthéon !</p>
+        <button class="btn" id="gacha-btn">Invoquer un héros (1x)</button>
+        <div id="gacha-result" class="gacha-result" style="display:none;"></div>
+        <button class="btn btn-secondary" onclick="showScreen('home-screen')">Retour à l'accueil</button>
+    </div>
+    
+    <div id="editor-screen" class="screen">
+        <h2>Éditeur de Personnages</h2>
+        <form id="editor-form" class="editor-form">
+            <label for="char-name">Nom:</label>
+            <input type="text" id="char-name" required>
+            
+            <label for="char-rarity">Rareté:</label>
+            <select id="char-rarity">
+                <option value="Commun">Commun</option>
+                <option value="Rare">Rare</option>
+                <option value="Épique">Épique</option>
+                <option value="Légendaire">Légendaire</option>
+                <option value="Mythique">Mythique</option>
+            </select>
+            
+            <label for="char-faction">Faction:</label>
+            <input type="text" id="char-faction" required>
+
+            <label for="char-role">Rôle:</label>
+            <select id="char-role">
+                <option value="Guerrier">Guerrier</option>
+                <option value="Mage">Mage</option>
+                <option value="Support">Support</option>
+                <option value="Tank">Tank</option>
+                <option value="DPS">DPS</option>
+                <option value="Assassin">Assassin</option>
+                <option value="Ranger">Ranger</option>
+            </select>
+
+            <label for="char-icon">Icône (emoji):</label>
+            <input type="text" id="char-icon" required maxlength="2">
+            
+            <label for="char-hp">PV:</label>
+            <input type="number" id="char-hp" value="1000" min="1" required>
+            <label for="char-atk">ATK:</label>
+            <input type="number" id="char-atk" value="150" min="1" required>
+            <label for="char-def">DEF:</label>
+            <input type="number" id="char-def" value="100" min="1" required>
+            <label for="char-vit">Vitesse:</label>
+            <input type="number" id="char-vit" value="100" min="1" required>
+            
+            <button class="btn" type="submit">Créer le Personnage</button>
+        </form>
+        <button class="btn btn-secondary" onclick="showScreen('home-screen')">Retour à l'accueil</button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        setupGame();
+    });
+
+    const GAME = {
+        screens: {},
+        data: {
+            roster: [],
+            enemies: [],
+            playerTeam: [],
+            enemyTeam: [],
+            combatLog: [],
+            turnOrder: [],
+            currentTurnIndex: 0
+        },
+        player: {
+            xp: 0
+        }
+    };
+    
+    function showMessage(message, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.textContent = message;
+        messageDiv.style.position = 'fixed';
+        messageDiv.style.bottom = '20px';
+        messageDiv.style.left = '50%';
+        messageDiv.style.transform = 'translateX(-50%)';
+        messageDiv.style.padding = '10px 20px';
+        messageDiv.style.borderRadius = '8px';
+        messageDiv.style.zIndex = '1000';
+        messageDiv.style.color = 'white';
+        messageDiv.style.backgroundColor = type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : '#3498db';
+        document.body.appendChild(messageDiv);
+        setTimeout(() => messageDiv.remove(), 3000);
+    }
+    
+    function showScreen(screenId) {
+        Object.values(GAME.screens).forEach(screen => screen.classList.remove('active'));
+        const screen = GAME.screens[screenId];
+        if (screen) {
+            screen.classList.add('active');
+            if (screenId === 'roster-screen') {
+                renderRoster();
+            } else if (screenId === 'team-selection-screen') {
+                renderTeamSelection();
+            }
+        } else {
+            console.error('Screen not found:', screenId);
+        }
+    }
+    
+    function setupGame() {
+        GAME.screens = {
+            'home-screen': document.getElementById('home-screen'),
+            'roster-screen': document.getElementById('roster-screen'),
+            'team-selection-screen': document.getElementById('team-selection-screen'),
+            'combat-screen': document.getElementById('combat-screen'),
+            'character-detail-screen': document.getElementById('character-detail-screen'),
+            'gacha-screen': document.getElementById('gacha-screen'),
+            'editor-screen': document.getElementById('editor-screen')
+        };
+        
+        createInitialData();
+        renderRoster();
+        setupGacha();
+        setupEditor();
+    }
+    
+    // --- Classes et données de base ---
+    class Character {
+        constructor(name, rarity, faction, role, stats, skills, icon) {
+            this.name = name;
+            this.rarity = rarity;
+            this.faction = faction;
+            this.role = role;
+            this.baseStats = stats;
+            this.skills = skills;
+            this.icon = icon;
+            this.level = 1;
+            this.xp = 0;
+            this.currentHP = stats.PV;
+            this.currentMana = 0;
+            this.buffs = [];
+            this.debuffs = [];
+        }
+        
+        getStats() {
+            const totalStats = { ...this.baseStats };
+            this.buffs.forEach(b => totalStats[b.stat] *= b.multiplier);
+            this.debuffs.forEach(d => totalStats[d.stat] *= d.multiplier);
+            return totalStats;
+        }
+    }
+    
+    class Skill {
+        constructor(name, type, damageModifier, effect, description) {
+            this.name = name;
+            this.type = type; // 'damage', 'heal', 'buff', 'debuff'
+            this.damageModifier = damageModifier;
+            this.effect = effect;
+            this.description = description;
+        }
+    }
+    
+    const skills = {
+        attack: new Skill("Attaque", 'damage', 1, null, "Inflige des dégâts à une cible."),
+        fireball: new Skill("Boule de feu", 'damage', 1.5, null, "Lance une boule de feu explosive."),
+        heal: new Skill("Soins", 'heal', 0.8, null, "Restaure les PV d'un allié."),
+        shield: new Skill("Bouclier de Lumière", 'buff', 0, { type: 'buff', stat: 'DEF', multiplier: 1.5, turns: 2 }, "Augmente la DEF d'un allié."),
+        poison: new Skill("Nuage de poison", 'debuff', 0.1, { type: 'debuff', stat: 'ATK', multiplier: 0.7, turns: 3, dot: true, damagePerTurn: 0.1 }, "Inflige des dégâts sur la durée et réduit l'ATK."),
+        assassinate: new Skill("Assassiner", 'damage', 2, null, "Inflige d'énormes dégâts à un ennemi."),
+        multishot: new Skill("Tirs multiples", 'damage', 0.8, { isAoE: true }, "Attaque tous les ennemis."),
+        heroicStrike: new Skill("Frappe Héroïque", 'damage', 1.2, null, "Une frappe puissante."),
+        divineBlessing: new Skill("Bénédiction Divine", 'buff', 0, { type: 'buff', stat: 'ATK', multiplier: 1.3, turns: 2 }, "Augmente l'ATK d'un allié."),
+        lifesteal: new Skill("Vol de vie", 'damage', 1.1, { lifesteal: 0.5 }, "Inflige des dégâts et vous soigne pour 50% des dégâts infligés."),
+        taunt: new Skill("Provocation", 'taunt', 0, null, "Force l'ennemi à vous attaquer.")
+    };
+    
+    function getRandomSkills(rarity) {
+        let numSkills;
+        switch(rarity) {
+            case 'Commun':
+            case 'Rare':
+                numSkills = 2;
+                break;
+            case 'Épique':
+                numSkills = 3;
+                break;
+            case 'Légendaire':
+                numSkills = 4;
+                break;
+            case 'Mythique':
+                numSkills = 5;
+                break;
+            default:
+                numSkills = 2;
+        }
+        
+        const availableSkills = Object.values(skills).filter(s => s.name !== 'Attaque');
+        const selected = [...availableSkills].sort(() => 0.5 - Math.random()).slice(0, numSkills - 1);
+        return [skills.attack, ...selected];
+    }
+    
+    function createCharacter(name, rarity, faction, role, icon, baseStats) {
+        const charSkills = getRandomSkills(rarity);
+        return new Character(name, rarity, faction, role, baseStats, charSkills, icon);
+    }
+    
+    function createInitialData() {
+        // Liste de 50 personnages prédéfinis
+        const initialCharacters = [
+            // Mythiques
+            createCharacter("Hercule", 'Mythique', 'Mythes Grecs', 'Guerrier', '🏛️', {PV: 1500, ATK: 200, DEF: 100, VIT: 120, 'Crit Rate': 0.1, 'Crit Dmg': 1.5, Dodge: 0.05, Résist: 0.1, Pénétration: 0}),
+            createCharacter("Superman", 'Mythique', 'Super-Héros', 'Tank', '🦸‍♂️', {PV: 2000, ATK: 180, DEF: 150, VIT: 90, 'Crit Rate': 0.05, 'Crit Dmg': 1.2, Dodge: 0.02, Résist: 0.3, Pénétration: 0}),
+            createCharacter("Sauron", 'Mythique', 'Magie Noire', 'Mage', '👁️‍🗨️', {PV: 1800, ATK: 250, DEF: 120, VIT: 110, 'Crit Rate': 0.15, 'Crit Dmg': 1.6, Dodge: 0.05, Résist: 0.2, Pénétration: 0.2}),
+            createCharacter("Guts", 'Mythique', 'Guerriers Sombres', 'Guerrier', '🗡️', {PV: 1600, ATK: 220, DEF: 110, VIT: 125, 'Crit Rate': 0.2, 'Crit Dmg': 1.8, Dodge: 0.08, Résist: 0.1, Pénétration: 0.1}),
+            createCharacter("Wonder Woman", 'Mythique', 'Super-Héros', 'DPS', '👸', {PV: 1400, ATK: 210, DEF: 105, VIT: 130, 'Crit Rate': 0.15, 'Crit Dmg': 1.7, Dodge: 0.1, Résist: 0.15, Pénétration: 0.1}),
+            
+            // Légendaires
+            createCharacter("Gandalf", 'Légendaire', 'Magie Noire', 'Mage', '🧙‍♂️', {PV: 800, ATK: 300, DEF: 50, VIT: 100, 'Crit Rate': 0.2, 'Crit Dmg': 1.8, Dodge: 0.1, Résist: 0.2, Pénétration: 0.2}),
+            createCharacter("Batman", 'Légendaire', 'Super-Héros', 'Assassin', '🦇', {PV: 1000, ATK: 220, DEF: 90, VIT: 140, 'Crit Rate': 0.25, 'Crit Dmg': 1.9, Dodge: 0.15, Résist: 0.15, Pénétration: 0.25}),
+            createCharacter("Loki", 'Légendaire', 'Mythes Nordiques', 'Mage', '🎭', {PV: 950, ATK: 280, DEF: 60, VIT: 120, 'Crit Rate': 0.2, 'Crit Dmg': 1.7, Dodge: 0.12, Résist: 0.18, Pénétration: 0.18}),
+            createCharacter("Thor", 'Légendaire', 'Mythes Nordiques', 'Guerrier', '🔨', {PV: 1400, ATK: 210, DEF: 130, VIT: 110, 'Crit Rate': 0.1, 'Crit Dmg': 1.5, Dodge: 0.05, Résist: 0.1, Pénétration: 0}),
+            createCharacter("King Kong", 'Légendaire', 'Créatures', 'Tank', '🦍', {PV: 2500, ATK: 180, DEF: 200, VIT: 80, 'Crit Rate': 0.05, 'Crit Dmg': 1.2, Dodge: 0.01, Résist: 0.3, Pénétration: 0}),
+            createCharacter("Godzilla", 'Légendaire', 'Créatures', 'Guerrier', '🦖', {PV: 2800, ATK: 200, DEF: 180, VIT: 85, 'Crit Rate': 0.08, 'Crit Dmg': 1.4, Dodge: 0.02, Résist: 0.25, Pénétration: 0}),
+            createCharacter("Kratos", 'Légendaire', 'Mythes Grecs', 'Guerrier', '🔥', {PV: 1500, ATK: 230, DEF: 120, VIT: 125, 'Crit Rate': 0.18, 'Crit Dmg': 1.7, Dodge: 0.08, Résist: 0.1, Pénétration: 0.1}),
+            createCharacter("Voldemort", 'Légendaire', 'Magie Noire', 'Mage', '🐍', {PV: 1000, ATK: 290, DEF: 70, VIT: 105, 'Crit Rate': 0.25, 'Crit Dmg': 1.9, Dodge: 0.1, Résist: 0.2, Pénétration: 0.2}),
+            
+            // Épiques
+            createCharacter("Aragorn", 'Épique', 'Magie Noire', 'Guerrier', '⚔️', {PV: 1200, ATK: 150, DEF: 120, VIT: 110, 'Crit Rate': 0.15, 'Crit Dmg': 1.6, Dodge: 0.1, Résist: 0.1, Pénétration: 0.1}),
+            createCharacter("Black Widow", 'Épique', 'Super-Héros', 'Assassin', '🕵️‍♀️', {PV: 850, ATK: 200, DEF: 70, VIT: 135, 'Crit Rate': 0.22, 'Crit Dmg': 1.85, Dodge: 0.18, Résist: 0.12, Pénétration: 0.2}),
+            createCharacter("Captain America", 'Épique', 'Super-Héros', 'Tank', '🛡️', {PV: 1500, ATK: 120, DEF: 150, VIT: 95, 'Crit Rate': 0.05, 'Crit Dmg': 1.2, Dodge: 0.05, Résist: 0.15, Pénétration: 0}),
+            createCharacter("Iron Man", 'Épique', 'Super-Héros', 'Ranger', '🤖', {PV: 1100, ATK: 190, DEF: 100, VIT: 120, 'Crit Rate': 0.15, 'Crit Dmg': 1.6, Dodge: 0.08, Résist: 0.1, Pénétration: 0.1}),
+            createCharacter("Sonic", 'Épique', 'Jeux Vidéo', 'Assassin', '🦔', {PV: 700, ATK: 180, DEF: 60, VIT: 180, 'Crit Rate': 0.25, 'Crit Dmg': 1.9, Dodge: 0.3, Résist: 0.05, Pénétration: 0.2}),
+            createCharacter("Draco Malfoy", 'Épique', 'Magie Noire', 'Mage', '🧪', {PV: 750, ATK: 180, DEF: 55, VIT: 105, 'Crit Rate': 0.15, 'Crit Dmg': 1.7, Dodge: 0.08, Résist: 0.15, Pénétration: 0.15}),
+            createCharacter("Link", 'Épique', 'Jeux Vidéo', 'Guerrier', '🧚', {PV: 1100, ATK: 160, DEF: 110, VIT: 115, 'Crit Rate': 0.1, 'Crit Dmg': 1.5, Dodge: 0.1, Résist: 0.1, Pénétration: 0.1}),
+            createCharacter("SpongeBob", 'Épique', 'Dessin animé', 'Support', '🧽', {PV: 900, ATK: 100, DEF: 90, VIT: 110, 'Crit Rate': 0.05, 'Crit Dmg': 1.2, Dodge: 0.05, Résist: 0.2, Pénétration: 0}),
+            createCharacter("Homer Simpson", 'Épique', 'Dessin animé', 'Tank', '🍩', {PV: 1800, ATK: 80, DEF: 180, VIT: 80, 'Crit Rate': 0.01, 'Crit Dmg': 1.1, Dodge: 0, Résist: 0.3, Pénétration: 0}),
+            createCharacter("Naruto", 'Épique', 'Anime', 'Guerrier', '🍜', {PV: 1300, ATK: 170, DEF: 100, VIT: 120, 'Crit Rate': 0.15, 'Crit Dmg': 1.6, Dodge: 0.12, Résist: 0.1, Pénétration: 0.1}),
+            createCharacter("Joker", 'Épique', 'Anti-héros', 'Mage', '🃏', {PV: 800, ATK: 210, DEF: 60, VIT: 125, 'Crit Rate': 0.2, 'Crit Dmg': 1.8, Dodge: 0.15, Résist: 0.15, Pénétration: 0.2}),
+            createCharacter("Wolverine", 'Épique', 'Super-Héros', 'Guerrier', '🐾', {PV: 1400, ATK: 190, DEF: 110, VIT: 115, 'Crit Rate': 0.15, 'Crit Dmg': 1.7, Dodge: 0.08, Résist: 0.12, Pénétration: 0.1}),
+            
+            // Rares
+            createCharacter("Groot", 'Rare', 'Super-Héros', 'Tank', '🌳', {PV: 1600, ATK: 80, DEF: 160, VIT: 70, 'Crit Rate': 0.02, 'Crit Dmg': 1.1, Dodge: 0, Résist: 0.2, Pénétration: 0}),
+            createCharacter("Spiderman", 'Rare', 'Super-Héros', 'Ranger', '🕸️', {PV: 900, ATK: 160, DEF: 80, VIT: 130, 'Crit Rate': 0.2, 'Crit Dmg': 1.7, Dodge: 0.2, Résist: 0.1, Pénétration: 0.1}),
+            createCharacter("Luffy", 'Rare', 'Anime', 'Guerrier', '👒', {PV: 1100, ATK: 140, DEF: 90, VIT: 115, 'Crit Rate': 0.1, 'Crit Dmg': 1.5, Dodge: 0.1, Résist: 0.08, Pénétration: 0.05}),
+            createCharacter("Pikachu", 'Rare', 'Jeux Vidéo', 'Mage', '⚡', {PV: 750, ATK: 170, DEF: 50, VIT: 140, 'Crit Rate': 0.2, 'Crit Dmg': 1.8, Dodge: 0.15, Résist: 0.1, Pénétration: 0.15}),
+            createCharacter("Mario", 'Rare', 'Jeux Vidéo', 'Guerrier', '🍄', {PV: 1000, ATK: 130, DEF: 100, VIT: 100, 'Crit Rate': 0.08, 'Crit Dmg': 1.3, Dodge: 0.05, Résist: 0.05, Pénétration: 0}),
+            createCharacter("Wario", 'Rare', 'Jeux Vidéo', 'Tank', '💰', {PV: 1400, ATK: 110, DEF: 140, VIT: 80, 'Crit Rate': 0.05, 'Crit Dmg': 1.2, Dodge: 0.02, Résist: 0.15, Pénétration: 0}),
+            createCharacter("Ash Ketchum", 'Rare', 'Anime', 'Support', '🧢', {PV: 800, ATK: 90, DEF: 80, VIT: 100, 'Crit Rate': 0.02, 'Crit Dmg': 1.1, Dodge: 0.05, Résist: 0.15, Pénétration: 0}),
+            createCharacter("Harry Potter", 'Rare', 'Magie', 'Mage', '⚡', {PV: 850, ATK: 160, DEF: 60, VIT: 110, 'Crit Rate': 0.15, 'Crit Dmg': 1.6, Dodge: 0.1, Résist: 0.1, Pénétration: 0.1}),
+            createCharacter("Shrek", 'Rare', 'Fantastique', 'Tank', '💚', {PV: 1800, ATK: 100, DEF: 170, VIT: 75, 'Crit Rate': 0.03, 'Crit Dmg': 1.1, Dodge: 0, Résist: 0.25, Pénétration: 0}),
+            createCharacter("Donkey", 'Rare', 'Fantastique', 'Support', '🐴', {PV: 900, ATK: 80, DEF: 85, VIT: 120, 'Crit Rate': 0.02, 'Crit Dmg': 1.1, Dodge: 0.05, Résist: 0.2, Pénétration: 0}),
+            createCharacter("Robin des Bois", 'Rare', 'Légendes', 'Ranger', '🏹', {PV: 950, ATK: 150, DEF: 70, VIT: 130, 'Crit Rate': 0.18, 'Crit Dmg': 1.6, Dodge: 0.15, Résist: 0.05, Pénétration: 0.1}),
+            createCharacter("L'incroyable Hulk", 'Rare', 'Super-Héros', 'Guerrier', '💪', {PV: 1700, ATK: 170, DEF: 150, VIT: 80, 'Crit Rate': 0.05, 'Crit Dmg': 1.3, Dodge: 0.02, Résist: 0.1, Pénétration: 0}),
+            createCharacter("Sonic", 'Rare', 'Jeux Vidéo', 'Assassin', '🦔', {PV: 700, ATK: 180, DEF: 60, VIT: 180, 'Crit Rate': 0.25, 'Crit Dmg': 1.9, Dodge: 0.3, Résist: 0.05, Pénétration: 0.2}),
+            
+            // Communs
+            createCharacter("Gobelin", 'Commun', 'Monstres', 'Guerrier', '👹', {PV: 500, ATK: 80, DEF: 40, VIT: 100, 'Crit Rate': 0, 'Crit Dmg': 1.5, Dodge: 0.05, Résist: 0, Pénétration: 0}),
+            createCharacter("Orc", 'Commun', 'Monstres', 'Tank', '🧟‍♂️', {PV: 800, ATK: 100, DEF: 60, VIT: 90, 'Crit Rate': 0, 'Crit Dmg': 1.5, Dodge: 0, Résist: 0.05, Pénétration: 0}),
+            createCharacter("Slime", 'Commun', 'Monstres', 'Support', '💧', {PV: 600, ATK: 50, DEF: 50, VIT: 80, 'Crit Rate': 0, 'Crit Dmg': 1, Dodge: 0, Résist: 0.1, Pénétration: 0}),
+            createCharacter("Soldat", 'Commun', 'Humains', 'Guerrier', '💂', {PV: 700, ATK: 90, DEF: 70, VIT: 95, 'Crit Rate': 0.02, 'Crit Dmg': 1.1, Dodge: 0.02, Résist: 0.02, Pénétration: 0}),
+            createCharacter("Chevalier", 'Commun', 'Humains', 'Tank', '🛡️', {PV: 850, ATK: 85, DEF: 90, VIT: 85, 'Crit Rate': 0.01, 'Crit Dmg': 1.1, Dodge: 0.01, Résist: 0.05, Pénétration: 0}),
+            createCharacter("Gollum", 'Commun', 'Magie Noire', 'Assassin', '🥷', {PV: 600, ATK: 180, DEF: 40, VIT: 150, 'Crit Rate': 0.3, 'Crit Dmg': 2, Dodge: 0.2, Résist: 0.05, Pénétration: 0.3}),
+            createCharacter("Stitch", 'Commun', 'Créatures', 'Ranger', '👾', {PV: 750, ATK: 120, DEF: 60, VIT: 110, 'Crit Rate': 0.1, 'Crit Dmg': 1.5, Dodge: 0.1, Résist: 0.05, Pénétration: 0.05}),
+            createCharacter("E.T.", 'Commun', 'Créatures', 'Support', '👽', {PV: 650, ATK: 70, DEF: 70, VIT: 90, 'Crit Rate': 0.01, 'Crit Dmg': 1.1, Dodge: 0.02, Résist: 0.15, Pénétration: 0}),
+            createCharacter("Frodon Sacquet", 'Commun', 'Magie Noire', 'Support', '👡', {PV: 500, ATK: 60, DEF: 60, VIT: 100, 'Crit Rate': 0.01, 'Crit Dmg': 1.1, Dodge: 0.05, Résist: 0.2, Pénétration: 0}),
+            createCharacter("Elfe de la forêt", 'Commun', 'Créatures', 'Ranger', '🧝', {PV: 700, ATK: 110, DEF: 65, VIT: 120, 'Crit Rate': 0.1, 'Crit Dmg': 1.4, Dodge: 0.1, Résist: 0.05, Pénétration: 0.05}),
+            createCharacter("Soldat de l'Empire", 'Commun', 'Sci-fi', 'Guerrier', '🤖', {PV: 800, ATK: 100, DEF: 80, VIT: 95, 'Crit Rate': 0.05, 'Crit Dmg': 1.2, Dodge: 0.02, Résist: 0.05, Pénétration: 0}),
+            createCharacter("Chevalier Jedi", 'Commun', 'Sci-fi', 'Guerrier', '🤺', {PV: 750, ATK: 110, DEF: 75, VIT: 105, 'Crit Rate': 0.08, 'Crit Dmg': 1.3, Dodge: 0.08, Résist: 0.08, Pénétration: 0.05}),
+            createCharacter("Spider-Man", 'Commun', 'Super-Héros', 'Ranger', '🕷️', {PV: 800, ATK: 130, DEF: 70, VIT: 140, 'Crit Rate': 0.15, 'Crit Dmg': 1.6, Dodge: 0.15, Résist: 0.05, Pénéstration: 0.1}),
+            createCharacter("L'Homme de Fer", 'Commun', 'Super-Héros', 'Tank', '🦾', {PV: 1300, ATK: 100, DEF: 120, VIT: 85, 'Crit Rate': 0.02, 'Crit Dmg': 1.1, Dodge: 0.01, Résist: 0.1, Pénétration: 0}),
+            createCharacter("Mario", 'Commun', 'Jeux Vidéo', 'Guerrier', '🍄', {PV: 900, ATK: 110, DEF: 90, VIT: 90, 'Crit Rate': 0.05, 'Crit Dmg': 1.2, Dodge: 0.05, Résist: 0.05, Pénétration: 0}),
+            createCharacter("Luigi", 'Commun', 'Jeux Vidéo', 'Support', '👻', {PV: 850, ATK: 80, DEF: 80, VIT: 100, 'Crit Rate': 0.02, 'Crit Dmg': 1.1, Dodge: 0.05, Résist: 0.1, Pénétration: 0}),
+            createCharacter("Sonic", 'Commun', 'Jeux Vidéo', 'Assassin', '💨', {PV: 650, ATK: 150, DEF: 50, VIT: 160, 'Crit Rate': 0.2, 'Crit Dmg': 1.8, Dodge: 0.2, Résist: 0.02, Pénétration: 0.15}),
+            createCharacter("Pikachu", 'Commun', 'Anime', 'Mage', '🐭', {PV: 700, ATK: 140, DEF: 45, VIT: 150, 'Crit Rate': 0.18, 'Crit Dmg': 1.7, Dodge: 0.15, Résist: 0.05, Pénétration: 0.1}),
+            createCharacter("Dora l'Exploratrice", 'Commun', 'Dessin animé', 'Support', '🎒', {PV: 600, ATK: 50, DEF: 60, VIT: 80, 'Crit Rate': 0, 'Crit Dmg': 1, Dodge: 0, Résist: 0.2, Pénétration: 0}),
+            createCharacter("Scooby-Doo", 'Commun', 'Dessin animé', 'Support', '🐶', {PV: 800, ATK: 70, DEF: 75, VIT: 90, 'Crit Rate': 0, 'Crit Dmg': 1.1, Dodge: 0, Résist: 0.15, Pénétration: 0}),
+            createCharacter("Rick Sanchez", 'Commun', 'Sci-fi', 'Mage', '🥒', {PV: 700, ATK: 170, DEF: 60, VIT: 115, 'Crit Rate': 0.1, 'Crit Dmg': 1.6, Dodge: 0.08, Résist: 0.15, Pénétration: 0.1}),
+            createCharacter("Morty Smith", 'Commun', 'Sci-fi', 'Support', '😬', {PV: 500, ATK: 50, DEF: 50, VIT: 85, 'Crit Rate': 0, 'Crit Dmg': 1, Dodge: 0.05, Résist: 0.1, Pénétration: 0}),
+            createCharacter("Goku", 'Commun', 'Anime', 'Guerrier', '👊', {PV: 1000, ATK: 130, DEF: 100, VIT: 105, 'Crit Rate': 0.1, 'Crit Dmg': 1.5, Dodge: 0.08, Résist: 0.08, Pénétration: 0.05}),
+            createCharacter("Vegeta", 'Commun', 'Anime', 'Guerrier', '💥', {PV: 950, ATK: 135, DEF: 95, VIT: 110, 'Crit Rate': 0.1, 'Crit Dmg': 1.5, Dodge: 0.08, Résist: 0.08, Pénétration: 0.05}),
+            createCharacter("Le Hobbit", 'Commun', 'Magie Noire', 'Ranger', '🥔', {PV: 600, ATK: 100, DEF: 60, VIT: 110, 'Crit Rate': 0.08, 'Crit Dmg': 1.3, Dodge: 0.05, Résist: 0.1, Pénétration: 0}),
+            createCharacter("Legolas", 'Commun', 'Fantastique', 'Ranger', '🎯', {PV: 800, ATK: 140, DEF: 70, VIT: 130, 'Crit Rate': 0.2, 'Crit Dmg': 1.7, Dodge: 0.15, Résist: 0.05, Pénétration: 0.1}),
+            createCharacter("Gimli", 'Commun', 'Fantastique', 'Tank', '⛏️', {PV: 1500, ATK: 90, DEF: 130, VIT: 80, 'Crit Rate': 0.03, 'Crit Dmg': 1.1, Dodge: 0, Résist: 0.15, Pénétration: 0}),
+        ];
+
+        // Shuffle and take 5 to start with, the rest go to the gacha pool
+        GAME.data.roster = initialCharacters.slice(0, 5);
+        GAME.data.gachaPool = initialCharacters.slice(5);
+
+        GAME.data.enemies = [
+            createCharacter("Dragon", 'Mythique', 'Monstres', 'Boss', '🐉', {PV: 5000, ATK: 500, DEF: 300, VIT: 100, 'Crit Rate': 0.2, 'Crit Dmg': 2, Dodge: 0.1, Résist: 0.3, Pénétration: 0.4})
+        ];
+    }
+    
+    // --- Gacha System ---
+    function setupGacha() {
+        const gachaBtn = document.getElementById('gacha-btn');
+        gachaBtn.onclick = summonCharacter;
+    }
+    
+    function summonCharacter() {
+        const rates = {
+            'Mythique': 0.01,
+            'Légendaire': 0.05,
+            'Épique': 0.15,
+            'Rare': 0.30,
+            'Commun': 0.49
+        };
+        
+        let roll = Math.random();
+        let rarityFound = null;
+        for (const rarity in rates) {
+            if (roll < rates[rarity]) {
+                rarityFound = rarity;
+                break;
+            }
+            roll -= rates[rarity];
+        }
+        
+        const possibleCharacters = GAME.data.gachaPool.filter(c => c.rarity === rarityFound);
+        if (possibleCharacters.length === 0) {
+            showMessage("Échec de l'invocation, pas de personnage disponible de cette rareté.", 'error');
+            return;
+        }
+
+        const summonedChar = possibleCharacters[Math.floor(Math.random() * possibleCharacters.length)];
+        
+        const gachaResultDiv = document.getElementById('gacha-result');
+        gachaResultDiv.style.display = 'block';
+        gachaResultDiv.innerHTML = `
+            <h3>Invocation !</h3>
+            <p>Vous avez invoqué un nouveau héros !</p>
+            <div class="char-icon" style="color:var(--rarity-${summonedChar.rarity})">${summonedChar.icon}</div>
+            <h4>${summonedChar.name}</h4>
+            <p class="rarity rarity-${summonedChar.rarity}">${summonedChar.rarity}</p>
+        `;
+
+        const existingChar = GAME.data.roster.find(c => c.name === summonedChar.name);
+        if (existingChar) {
+            // C'est un doublon
+            const indexInPool = GAME.data.gachaPool.indexOf(summonedChar);
+            if (indexInPool > -1) {
+                GAME.data.gachaPool.splice(indexInPool, 1);
+            }
+            showMessage(`Vous avez obtenu un doublon de ${summonedChar.name} !`, 'info');
+        } else {
+            // Nouveau personnage
+            GAME.data.roster.push(summonedChar);
+            const indexInPool = GAME.data.gachaPool.indexOf(summonedChar);
+            if (indexInPool > -1) {
+                GAME.data.gachaPool.splice(indexInPool, 1);
+            }
+            showMessage(`Nouveau héros : ${summonedChar.name} a rejoint votre Panthéon !`, 'success');
+        }
+    }
+    
+    // --- Editor System ---
+    function setupEditor() {
+        const editorForm = document.getElementById('editor-form');
+        editorForm.addEventListener('submit', createCustomCharacter);
+    }
+    
+    function createCustomCharacter(event) {
+        event.preventDefault();
+        
+        const name = document.getElementById('char-name').value;
+        const rarity = document.getElementById('char-rarity').value;
+        const faction = document.getElementById('char-faction').value;
+        const role = document.getElementById('char-role').value;
+        const icon = document.getElementById('char-icon').value;
+        const hp = parseInt(document.getElementById('char-hp').value, 10);
+        const atk = parseInt(document.getElementById('char-atk').value, 10);
+        const def = parseInt(document.getElementById('char-def').value, 10);
+        const vit = parseInt(document.getElementById('char-vit').value, 10);
+        
+        if (!name || !faction || !icon || isNaN(hp) || isNaN(atk) || isNaN(def) || isNaN(vit)) {
+            showMessage("Veuillez remplir tous les champs et utiliser des nombres valides pour les stats.", 'error');
+            return;
+        }
+
+        const baseStats = {
+            PV: hp, ATK: atk, DEF: def, VIT: vit,
+            'Crit Rate': 0.1, 'Crit Dmg': 1.5, Dodge: 0.05, Résist: 0.1, Pénétration: 0
+        };
+
+        const newChar = createCharacter(name, rarity, faction, role, icon, baseStats);
+        GAME.data.roster.push(newChar);
+        
+        showMessage(`${name} a été créé et ajouté à votre roster !`, 'success');
+        
+        document.getElementById('editor-form').reset();
+    }
+
+    // --- Render Functions ---
+    function renderRoster() {
+        const rosterList = document.getElementById('roster-list');
+        rosterList.innerHTML = '';
+        GAME.data.roster.forEach((char, index) => {
+            const card = document.createElement('div');
+            card.className = 'character-card';
+            card.innerHTML = `
+                <div class="char-icon">${char.icon}</div>
+                <h4>${char.name}</h4>
+                <p class="rarity rarity-${char.rarity}">${char.rarity}</p>
+                <p>${char.role}</p>
+            `;
+            card.onclick = () => showCharacterDetails(char, index);
+            rosterList.appendChild(card);
+        });
+    }
+
+    function showCharacterDetails(char) {
+        const detailsView = document.getElementById('character-details-view');
+        detailsView.innerHTML = `
+            <div class="character-details-top">
+                <div class="char-icon">${char.icon}</div>
+                <h2>${char.name}</h2>
+                <p class="rarity rarity-${char.rarity}">${char.rarity} - ${char.role}</p>
+                <p>Niveau : ${char.level}</p>
+            </div>
+            <h3>Statistiques de base</h3>
+            <div class="stat-list">
+                ${Object.entries(char.getStats()).map(([key, value]) => `
+                    <div class="stat-item">
+                        <span>${key}</span>
+                        <span>${value}</span>
+                    </div>
+                `).join('')}
+            </div>
+            <h3>Compétences</h3>
+            <div class="skill-details">
+                ${char.skills.map(skill => `
+                    <div class="skill-item">
+                        <h4>${skill.name}</h4>
+                        <p>${skill.description}</p>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        showScreen('character-detail-screen');
+    }
+    
+    function renderTeamSelection() {
+        const rosterContainer = document.getElementById('team-selection-roster');
+        rosterContainer.innerHTML = '';
+        const startBtn = document.getElementById('start-combat-btn');
+        
+        GAME.data.roster.forEach((char) => {
+            const card = document.createElement('div');
+            card.className = 'team-selection-card';
+            card.innerHTML = `
+                <div class="char-icon">${char.icon}</div>
+                <h4>${char.name}</h4>
+            `;
+            card.onclick = () => toggleCharacterSelection(char, card);
+            rosterContainer.appendChild(card);
+        });
+        
+        updateTeamDisplay();
+        startBtn.onclick = startCombat;
+    }
+
+    function toggleCharacterSelection(char, card) {
+        const team = GAME.data.playerTeam;
+        const index = team.findIndex(c => c.name === char.name);
+        
+        if (index > -1) {
+            team.splice(index, 1);
+            card.classList.remove('selected');
+        } else if (team.length < 5) {
+            team.push(char);
+            card.classList.add('selected');
+        }
+        
+        updateTeamDisplay();
+        document.getElementById('start-combat-btn').disabled = team.length !== 5;
+    }
+
+    function updateTeamDisplay() {
+        const slots = document.querySelectorAll('#selected-team-display .selected-slot');
+        slots.forEach((slot, index) => {
+            slot.innerHTML = '';
+            slot.classList.remove('filled');
+            if (GAME.data.playerTeam[index]) {
+                slot.innerHTML = `<div class="char-icon">${GAME.data.playerTeam[index].icon}</div>`;
+                slot.classList.add('filled');
+            } else {
+                slot.innerHTML = `Slot ${index + 1}`;
+            }
+        });
+    }
+
+    // --- Combat Logic ---
+    function startCombat() {
+        showScreen('combat-screen');
+        GAME.data.enemyTeam = GAME.data.enemies.slice(0, 5);
+        GAME.data.combatLog = [];
+        
+        [...GAME.data.playerTeam, ...GAME.data.enemyTeam].forEach(char => {
+            char.currentHP = char.getStats().PV;
+            char.buffs = [];
+            char.debuffs = [];
+        });
+
+        updateCombatUI();
+        logCombat("Le combat commence !");
+        
+        GAME.data.turnOrder = [...GAME.data.playerTeam, ...GAME.data.enemyTeam]
+            .sort((a, b) => b.getStats().VIT - a.getStats().VIT);
+        
+        GAME.data.currentTurnIndex = -1;
+        setTimeout(nextTurn, 1000);
+    }
+
+    function updateCombatUI() {
+        const playerTeamDiv = document.getElementById('player-team');
+        const enemyTeamDiv = document.getElementById('enemy-team');
+        playerTeamDiv.innerHTML = '';
+        enemyTeamDiv.innerHTML = '';
+
+        GAME.data.playerTeam.forEach(char => renderCombatant(char, playerTeamDiv, 'player'));
+        GAME.data.enemyTeam.forEach(char => renderCombatant(char, enemyTeamDiv, 'enemy'));
+
+        checkCombatEnd();
+    }
+    
+    function renderCombatant(char, parentDiv, team) {
+        const combatantDiv = document.createElement('div');
+        combatantDiv.className = `combatant ${team}`;
+        combatantDiv.dataset.name = char.name;
+        combatantDiv.innerHTML = `
+            <h4>${char.name}</h4>
+            <div class="char-icon">${char.icon}</div>
+            <p>${char.role}</p>
+            <div class="hp-bar-container">
+                <div class="hp-bar-fill" style="width: ${(char.currentHP / char.getStats().PV) * 100}%"></div>
+            </div>
+            <small>${Math.max(0, char.currentHP)} / ${char.getStats().PV}</small>
+        `;
+        combatantDiv.onclick = () => handleTargetSelection(char);
+        parentDiv.appendChild(combatantDiv);
+    }
+    
+    function logCombat(message) {
+        const combatLog = document.getElementById('combat-log');
+        const p = document.createElement('p');
+        p.textContent = message;
+        combatLog.appendChild(p);
+        combatLog.scrollTop = combatLog.scrollHeight;
+    }
+
+    function nextTurn() {
+        GAME.data.currentTurnIndex = (GAME.data.currentTurnIndex + 1) % GAME.data.turnOrder.length;
+        const currentCharacter = GAME.data.turnOrder[GAME.data.currentTurnIndex];
+        
+        if (currentCharacter.currentHP <= 0) {
+            logCombat(`${currentCharacter.name} est hors de combat.`)
+            setTimeout(nextTurn, 500);
+            return;
+        }
+
+        logCombat(`C'est au tour de ${currentCharacter.name}.`);
+        
+        const isPlayerCharacter = GAME.data.playerTeam.includes(currentCharacter);
+        
+        if (isPlayerCharacter) {
+            handlePlayerTurn(currentCharacter);
+        } else {
+            setTimeout(() => handleEnemyTurn(currentCharacter), 1000);
+        }
+    }
+
+    function handlePlayerTurn(character) {
+        const actionContainer = document.getElementById('combat-actions');
+        actionContainer.innerHTML = '';
+        character.skills.forEach(skill => {
+            const btn = document.createElement('button');
+            btn.className = 'btn skill-btn';
+            btn.textContent = skill.name;
+            btn.onclick = () => chooseTarget(character, skill);
+            actionContainer.appendChild(btn);
+        });
+    }
+
+    function chooseTarget(source, skill) {
+        const enemyCards = document.querySelectorAll('#enemy-team .combatant');
+        enemyCards.forEach(card => card.classList.add('targetable'));
+        
+        const targetSelectionHandler = (event) => {
+            const targetName = event.currentTarget.dataset.name;
+            const target = GAME.data.enemyTeam.find(c => c.name === targetName);
+            if (target) {
+                performAction(source, skill, target);
+                enemyCards.forEach(card => {
+                    card.classList.remove('targetable');
+                    card.removeEventListener('click', targetSelectionHandler);
+                });
+            }
+        };
+        
+        enemyCards.forEach(card => card.addEventListener('click', targetSelectionHandler));
+    }
+
+    function handleEnemyTurn(character) {
+        const targets = GAME.data.playerTeam.filter(c => c.currentHP > 0);
+        if (targets.length === 0) return;
+        const target = targets[Math.floor(Math.random() * targets.length)];
+        const skill = character.skills[Math.floor(Math.random() * character.skills.length)];
+        
+        performAction(character, skill, target);
+        
+        setTimeout(nextTurn, 1500);
+    }
+    
+    function performAction(source, skill, target) {
+        logCombat(`${source.name} utilise ${skill.name} sur ${target.name}.`);
+        
+        const damage = calculateDamage(source, target, skill);
+        target.currentHP -= damage;
+        
+        if (target.currentHP <= 0) {
+            target.currentHP = 0;
+            logCombat(`${target.name} est vaincu !`);
+            GAME.data.turnOrder = GAME.data.turnOrder.filter(c => c !== target);
+        } else {
+            logCombat(`${target.name} subit ${damage.toFixed(0)} dégâts. Il lui reste ${target.currentHP.toFixed(0)} PV.`);
+        }
+        
+        updateCombatUI();
+    }
+    
+    function calculateDamage(source, target, skill) {
+        const sourceStats = source.getStats();
+        const targetStats = target.getStats();
+        let baseDamage = sourceStats.ATK * skill.damageModifier;
+        let isCrit = Math.random() < sourceStats['Crit Rate'];
+        
+        if (isCrit) {
+            baseDamage *= sourceStats['Crit Dmg'];
+            logCombat(`Coup critique !`);
+        }
+        
+        let damageReduction = targetStats.DEF / (targetStats.DEF + 100);
+        let finalDamage = baseDamage * (1 - damageReduction);
+        
+        return finalDamage;
+    }
+
+    function checkCombatEnd() {
+        const playerAlive = GAME.data.playerTeam.some(c => c.currentHP > 0);
+        const enemyAlive = GAME.data.enemyTeam.some(c => c.currentHP > 0);
+
+        const victoryMsg = document.getElementById('victory-message');
+        const defeatMsg = document.getElementById('defeat-message');
+        const endBtn = document.getElementById('end-combat-btn');
+        
+        if (!enemyAlive) {
+            victoryMsg.style.display = 'block';
+            defeatMsg.style.display = 'none';
+            endBtn.style.display = 'block';
+            logCombat("Victoire ! Vous avez gagné le combat.");
+        } else if (!playerAlive) {
+            defeatMsg.style.display = 'block';
+            victoryMsg.style.display = 'none';
+            endBtn.style.display = 'block';
+            logCombat("Défaite... Vos héros sont vaincus.");
+        }
+    }
+</script>
+
+</body>
+</html>
+
